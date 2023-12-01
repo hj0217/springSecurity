@@ -21,6 +21,8 @@ public class MemberService {
     }
 
     public Optional<Member> findOne(String userId) {
+System.out.println("MemberService findone: " + userId);
+
         return repository.findByUserid(userId);
     }
 }

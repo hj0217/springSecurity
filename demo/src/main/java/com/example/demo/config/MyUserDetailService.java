@@ -8,7 +8,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
-
 import java.util.Optional;
 
 
@@ -24,15 +23,18 @@ public class MyUserDetailService implements UserDetailsService {
         this.memberService = memberService;
     }
 
-    @Override //// Spring Security가 인증 확인을 위해 바라보는 객체가 UserDetailService
-    public UserDetails loadUserByUsername(String insertedUserId) throws UsernameNotFoundException {
-        Optional<Member> findOne = memberService.findOne(insertedUserId);
-        Member member = findOne.orElseThrow(() -> new UsernameNotFoundException("없는 회원입니다 ㅠ"));
+    @Override //// Spring Security가 인증 확인을 위해 바라보는 객체가 UserDetailService임.
+    // UserDetailService는 주로 DB 혹은 다른 원격소스에서 가져와 인증 프로세스에 활용하는 반면
+    // InMemoryUserDetailsManager는 Test용도으로 쓰임
+    public UserDetails loadUserByUsername(String insertedUserId) throws UsernameNotFoundException { //UserDetails는 고객 정보 확인 후 확인된 내용 담는 객체라고 할 수 있음.
 
-        return User.builder() //// DB 검색 결과를 User에 담음 (User는 UserDetails와 CredentialsContainer 구현한 구현체로 Spring Security 프로세스에 필요한 객체
+        //DB- 로그인, 로그인 정보 가져옴.
+        Member member = memberService.findOne(insertedUserId).orElseThrow(() -> new UsernameNotFoundException("없는 회원입니다 ㅠ"));//.orElseThrow 결과 존재x 예외 던짐!
+
+        return User.builder() //// DB 검색 결과를 User에 담음 (User는 UserDetails와 CredentialsContainer 구현한 구현체로 Spring Security 프로세스에 필요한 객체)
                 .username(member.getUserid())
                 .password(member.getPw())
                 .roles(member.getRoles())
-                .build();
+                .build(); // 객체 리턴하는 시점에  authorities와 session에 유저 정보가 저장됨.
     }
 }
